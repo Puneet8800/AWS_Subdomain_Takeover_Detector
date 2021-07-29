@@ -25,6 +25,7 @@ The purpose of this automation is to detect misconfigured Route53 entries which 
 
 # TODO
 * Slack Integration ---------> Done
+* Detect Elastic ip Takeover
 
 
 
