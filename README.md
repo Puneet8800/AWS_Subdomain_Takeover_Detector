@@ -16,6 +16,7 @@ The purpose of this automation is to detect misconfigured Route53 entries which 
 
 * Configure IAM role with permission mention above in prerequisites.
 * Deploy it on any of the cron Lambda/rundeck.
+* In slack_alert() please put the incoming webhook url of slack channel.
 
 # Scans Amazon Route53 to identify:
 * Check alias records for CloudFront distributions with missing S3 origin, ElasticBeanstalk vulnerable aliaa record and S3 vulnerable Alias record.
@@ -23,7 +24,7 @@ The purpose of this automation is to detect misconfigured Route53 entries which 
 * Check for NS subdomain takeover.
 
 # TODO
-* Slack Integration
+* Slack Integration ---------> Done
 
 
 
