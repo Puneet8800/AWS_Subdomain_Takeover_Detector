@@ -11,6 +11,9 @@ from dns.message import *
 from dns.query import *
 import dns.resolver
 
+vul_domain = []
+secure_domain=[]
+
 
 # doamin = gppgle.com
 def NSdomaintakeover(domain):
@@ -171,6 +174,28 @@ def vul_cname_s3(domain):
     
     except:
         return False
+
+def slack_alert(secure_domain, vul_domain):
+    template = {}
+    template['attachments'] = [{}]
+    template['attachments'][0]['fallback'] = 'unable to display this message !'
+    template['attachments'][0]['color'] = '#F75D59'
+    template['attachments'][0]['pretext'] = "List of secure and vulnerable domain "
+    template['attachments'][0]['title'] = "List of secure and vulnerable domain"
+    template['attachments'][0]['fields'] = [{"title": "Miscomfigured Route53 Entries"}]
+    template['attachments'][0]['fields'].append({"title": "Secure Domain"})
+    for i in secure_domain:
+        template['attachments'][0]['fields'].append({"value": i})
+    template['attachments'][0]['fields'].append({"title": "Vulnerable_domain"})
+    for j in vul_domain:
+        template['attachments'][0]['fields'].append({"value": j})
+
+            
+
+    json_template = json.dumps(template)
+    requests.post(url='Put slack incoming webhook url', data=json_template)
+    
+
         
 def main():
     session = boto3.Session(profile_name='default')
@@ -200,8 +225,11 @@ def main():
                                         res = vul_cname_cf_s3(domain)
                                         if res:
                                             print("vulnerable cf  domain" + " " +"--------->" +" "+ domain)
+                                            vul_domain.append(domain)
                                         else:
                                             print("Domain is Secure"+ " " +"--------->" +" "+ domain)
+                                            secure_domain.append(domain)
+
                                     
                                     elif "elasticbeanstalk.com" in record['ResourceRecords'][0]['Value']:
                                         domain = record['Name']
@@ -209,16 +237,20 @@ def main():
 
                                         if res:
                                             print("vulnerable cf  domain" + " " +"--------->" +" "+ domain)
+                                            vul_domain.append(domain)
                                         else:
                                             print("Domain is Secure"+ " " +"--------->" +" "+ domain)
+                                            secure_domain.append(domain)
                                     
                                     elif "amazonaws.com" in record['ResourceRecords'][0]['Value'] and ".s3-website." in record['ResourceRecords'][0]['Value']:
                                         domain = record['Name']
                                         res = vul_cname_s3(domain)
                                         if res:
                                             print("vulnerable s3  domain" + " " +"--------->" +" "+ domain)
+                                            vul_domain.append(domain)
                                         else:
                                             print("Domain is Secure"+ " " +"--------->" +" "+ domain) 
+                                            secure_domain.append(domain)
                                     elif record["Type"] == "NS":
                                         domain = record['Name']
                                         NSdomaintakeover(domain)
@@ -234,8 +266,10 @@ def main():
                                         if res:
                                             print("vulnerable cloudfront domain" + " " +"--------->" +" "+ domain)
                                             print("missing resource" + " " + "----------->" + alias)
+                                            vul_domain.append(domain)
                                         else:
                                             print("Domain is Secure"+ " " +"--------->" +" "+ domain)
+                                            secure_domain.append(domain)
                                     elif "elasticbeanstalk.com" in record['AliasTarget']['DNSName']:
                                         domain  = record['Name']
                                         alias =  record["AliasTarget"]["DNSName"]
@@ -243,8 +277,10 @@ def main():
                                         if res:
                                             print("vulnerable elasticbean domain" + " " +"--------->" +" "+ domain)
                                             print("missing resource" + " " + "----------->" + alias)
+                                            vul_domain.append(domain)
                                         else:
                                             print("Domain is Secure"+ " " +"--------->" +" "+ domain)
+                                            secure_domain.append(domain)
                                     elif ("amazonaws.com" in record['AliasTarget']['DNSName']) and ".s3-website." in (record['AliasTarget']['DNSName']):
                                         domain  = record['Name']
                                         alias =  record["AliasTarget"]["DNSName"]
@@ -252,11 +288,12 @@ def main():
                                         if res:
                                             print("vulnerable s3 domain" + " " +"--------->" +" "+ domain)
                                             print("missing resource" + " " + "----------->" + alias)
+                                            vul_domain.append(domain)
                                         else:
                                             print("Domain is Secure"+ " " +"--------->" +" "+ domain)
+                                            secure_domain.append(domain)
                                     else:
-                                        None
-                                
+                                        None                      
                                 
                                 
 
@@ -264,6 +301,9 @@ def main():
 
                     except:
                         pass
+        #print(secure_domain)
+        #print(vul_domain)
+        slack_alert(secure_domain, vul_domain)
 
     except:
         pass                        
